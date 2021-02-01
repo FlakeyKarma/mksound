@@ -60,6 +60,7 @@ hz = random.uniform(50.0, 500.0)
 #Duration
 D = random.uniform(0.2, 0.5)
 
+
 #Establish array based on duration and sampling rate
 sample_num = N.arange(D*S)
 
@@ -68,10 +69,13 @@ WF = (random.randint(1, 3)) * N.sin(2 * N.pi * sample_num * hz / S)
 
 #Random sound generation that intensifies with each iteration!
 for i in range(random.randint(9, 25)):
+    print(hz, D)
     #hz = chords[random.choice([i for i in chords])]
     #WF = N.append(WF, (random.randint(1, 3)) * N.sin(2 * N.pi * N.arange(random.uniform(0.2, 0.5) * S) * hz / S))
     hz = random.uniform(50.0, 500.0)
-    WF = N.append(WF, i * N.sin(2 * N.pi * N.arange(random.uniform(0.2, 0.5) * S) * hz / S))
+    D = random.uniform(0.2, 0.5)
+    WF = N.append(WF, i * N.sin(2 * N.pi * N.arange(D * S) * hz / S))
+    #WF = N.append(WF, i * N.sin(2 * N.pi * N.arange(D * S) * hz / S))
 
 
 WF_integerz = N.int16(WF * 32767)
