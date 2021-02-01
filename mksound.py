@@ -73,9 +73,8 @@ for i in range(random.randint(9, 25)):
     hz = random.uniform(50.0, 500.0)
     WF = N.append(WF, i * N.sin(2 * N.pi * N.arange(random.uniform(0.2, 0.5) * S) * hz / S))
 
-WF_quiet = WF*0.3
 
-WF_integerz = N.int16(WF_quiet * 32767)
+WF_integerz = N.int16(WF * 32767)
 
 #Finally, write to WAV file.
 write('OUTPUT.wav', S, WF_integerz)
