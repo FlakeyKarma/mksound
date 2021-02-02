@@ -4,6 +4,19 @@ import numpy as N
 from scipy.io.wavfile import write
 import random
 
+#Make note with the amplification level, frequency, duration(seconds), and number of samples per second to occur
+def addNote(freq, wave_form=None, amp=1, duration=0.5, sampling_rate=44100):
+    if wave_form is None:
+        wave_form = []
+    
+    return N.append(wave_form, amp * N.sin(2 * N.pi * N.arange(duration * sampling_rate) * freq / sampling_rate))
+
+#Finally, write to WAV file.
+def fileWrite(wave_form):
+    write('OUTPUT.wav', S, N.int16(wave_form * 32767))
+
+
+
 #Samples per sec
 S = 44100
 
@@ -53,34 +66,46 @@ chords = {
 	'G' :392.0
 }
 
-#Could be either randomly selected from chords in dict, or just randomly selected in Hz from 50Hz(Low) to 500Hz(High), just a general range. I recommend looking at speaker limits before entering personal ranges lol.
-#hz = chords[random.choice([i for i in chords])]
-hz = random.uniform(50.0, 500.0)
-
-#Duration
-D = random.uniform(0.2, 0.5)
-
-
-#Establish array based on duration and sampling rate
-sample_num = N.arange(D*S)
-
-WF = []
-
-def makeNote(WF, amp, hz, D, S):
-    return N.append(WF, amp * N.sin(2 * N.pi * N.arange(D * S) * hz / S))
-
-#Set first value
-WF = makeNote(WF, 1, hz, D, S)
-
-#Random sound generation that intensifies with each iteration!
-for i in range(random.randint(9, 25)):
-    print(hz, D)
+def testRun(S):
+    #Could be either randomly selected from chords in dict, or just randomly selected in Hz from 50Hz(Low) to 500Hz(High), just a general range. I recommend looking at speaker limits before entering personal ranges lol.
+    #hz = chords[random.choice([i for i in chords])]
     hz = random.uniform(50.0, 500.0)
+
+    #Duration
     D = random.uniform(0.2, 0.5)
-    WF = makeNote(WF, i, hz, D, S)
 
 
-WF_integerz = N.int16(WF * 32767)
+    #Establish array based on duration and sampling rate
+    sample_num = N.arange(D*S)
 
-#Finally, write to WAV file.
-write('OUTPUT.wav', S, WF_integerz)
+    WF = []
+
+    #Set first value
+    WF = makeNote(WF, 1, hz, D, S)
+
+    #Random sound generation that intensifies with each iteration!
+    for i in range(random.randint(9, 25)):
+        print(hz, D)
+        hz = random.uniform(50.0, 500.0)
+        D = random.uniform(0.2, 0.5)
+        WF = addNote(WF, i, hz, D, S)
+    fileWrite(WF)
+
+#Make a "song" based on frequency list, duration list, and amplification list
+def makeSong(freq_list, duration_list, amp_list, repeatz=1):
+    wave_form = []
+    for i in range(repeatz):
+        for j in range(len(freq_list)):
+            wave_form = addNote(freq_list[j], wave_form, amp=amp_list[j], duration=duration_list[j])
+    return wave_form
+
+#freq_list is list of frequencies to go through, next repeatz is the number of times to repeat sequence. The point of this is to create a same-tempo audio sample list
+def makeBeat(freq, duration=0.2, amp=0.5, repeatz=1):
+    fl = []
+    for i in range(repeatz):
+        fl += [freq, 0.0]
+    wave_form = makeSong(fl, [duration for i in range(repeatz*2)], [amp for i in range(repeatz*2)], repeatz)
+    return wave_form 
+
+#testRun(S)
+fileWrite(makeBeat(random.uniform(200.0, 500.0), repeatz=2))
