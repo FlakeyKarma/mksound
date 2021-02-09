@@ -2,7 +2,7 @@
 
 import numpy as N
 from scipy.io.wavfile import write
-import random
+import threading,random,os
 
 #Make note with the amplification level, frequency, duration(seconds), and number of samples per second to occur
 def addNote(freq, wave_form=None, amp=1, duration=0.5, sampling_rate=44100):
@@ -19,6 +19,7 @@ def fileWrite(wave_form):
 
 #Samples per sec
 S = 44100
+
 
 #Frequency presets
 chords = {
@@ -66,6 +67,37 @@ chords = {
 	'G' :392.0
 }
 
+def guitarTabz(fret, string_to_play, fret_count=19):
+    #Guitar strings - credit: https://www.google.com/url?sa=i&url=http%3A%2F%2Fdanielchoy.blogspot.com%2F2017%2F02%2Fguitar-strings-frequency-chart-guitar.html&psig=AOvVaw076iywIyPiC7cB42Z3KWVJ&ust=1612553746158000&source=images&cd=vfe&ved=0CAMQjB1qFwoTCICwjo390O4CFQAAAAAdAAAAABAD
+    '''
+    guitar_strings = {
+            'E':82.407,\
+            'A':110.0,\
+            'D':146.832,\
+            'G':195.998,\
+            'B':246.942,\
+            'e':329.628
+            }
+    '''
+    old_strings = {
+            'E':112.407,\
+            'A':140.0,\
+            'D':176.832,\
+            'G':225.998,\
+            'B':276.942,\
+            'e':359.628
+            }
+    guitar_strings = {}
+    for i in old_strings:
+        guitar_strings[i] = old_strings[i] + 64
+    string_list = [guitar_string for guitar_string in guitar_strings]
+
+    #Get frequency increase level
+    f_inc = guitar_strings[string_list[string_list.index(string_to_play)+1]] - guitar_strings[string_to_play] + 20 if (string_to_play != 'e') else 102
+
+    #Get estimated value by dividing the fret by the fret_count to get desired pitch, multiplying by f_inc to get increased value
+    return ((fret/fret_count) * f_inc + guitar_strings[string_to_play])
+
 def testRun(S):
     #Could be either randomly selected from chords in dict, or just randomly selected in Hz from 50Hz(Low) to 500Hz(High), just a general range. I recommend looking at speaker limits before entering personal ranges lol.
     #hz = chords[random.choice([i for i in chords])]
@@ -81,14 +113,14 @@ def testRun(S):
     WF = []
 
     #Set first value
-    WF = makeNote(WF, 1, hz, D, S)
+    #WF = addNote(WF, 1, hz, D, S)
 
     #Random sound generation that intensifies with each iteration!
     for i in range(random.randint(9, 25)):
-        print(hz, D)
+        #print(hz, D)
         hz = random.uniform(50.0, 500.0)
         D = random.uniform(0.2, 0.5)
-        WF = addNote(WF, i, hz, D, S)
+        WF = addNote(wave_form=WF, amp=i, freq=hz, duration=D, sampling_rate=S)
     fileWrite(WF)
 
 #Make a "song" based on frequency list, duration list, and amplification list
@@ -106,6 +138,29 @@ def makeBeat(freq, duration=0.2, amp=0.5, repeatz=1):
         fl += [freq, 0.0]
     wave_form = makeSong(fl, [duration for i in range(repeatz*2)], [amp for i in range(repeatz*2)], repeatz)
     return wave_form 
+#fileWrite(makeBeat(random.uniform(200.0, 500.0), repeatz=2)))
 
-#testRun(S)
-fileWrite(makeBeat(random.uniform(200.0, 500.0), repeatz=2))
+#Display problem and quit alarm when input is correct
+def run():
+    a_th = threading.Thread(target=alarmThread)
+    p_th = threading.Thread(target=prblmThread)
+    a_th.start()
+    p_th.start()
+
+#Alarm function to run
+def alarmThread():
+    while True:
+        testRun(S)
+        os.system("lame -b 320 OUTPUT.wav 1>/dev/null 2>/dev/null")
+        os.system("mpg123 OUTPUT.mp3 1>/dev/null 2>/dev/null")
+
+#Display problem
+def prblmThread():
+    while True:
+        inc = raw_input('A> ')
+        if inc == 'a':
+            os.system("killall python2.7")
+            os.system("killall mpg123")
+            break
+
+run()
